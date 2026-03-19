@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Stay On">
+<meta name="theme-color" content="#0a0a0a">
+<title>Stay On — Mayuresh</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:opsz,wght@9..144,300;9..144,500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+:root {
+  --bg: #0a0a0a;
+  --surface: #141414;
+  --surface2: #1e1e1e;
+  --border: rgba(255,255,255,0.08);
+  --border2: rgba(255,255,255,0.14);
+  --text: #f0ede6;
+  --muted: #6b6760;
+  --muted2: #9e9a94;
+
+  --normal: #1D9E75;
+  --normal-bg: rgba(29,158,117,0.12);
+  --normal-light: #9FE1CB;
+
+  --exam: #BA7517;
+  --exam-bg: rgba(186,117,23,0.12);
+  --exam-light: #FAC775;
+
+  --endsem: #D85A30;
+  --endsem-bg: rgba(216,90,48,0.12);
+  --endsem-light: #F0997B;
+
+  --rest: #378ADD;
+  --rest-bg: rgba(55,138,221,0.12);
+  --rest-light: #85B7EB;
+}
+
+html, body { height: 100%; background: var(--bg); color: var(--text); font-family: 'DM Mono', monospace; overflow-x: hidden; }
+
+.app { max-width: 430px; margin: 0 auto; min-height: 100vh; padding: 0 0 100px; }
+
+/* Header */
+.header { padding: 56px 20px 20px; }
+.header-top { display: flex; justify-content: space-between; align-items: flex-start; }
+.app-name { font-family: 'Fraunces', serif; font-size: 28px; font-weight: 300; color: var(--text); letter-spacing: -0.5px; }
+.date-chip { font-size: 11px; color: var(--muted2); background: var(--surface); border: 0.5px solid var(--border2); border-radius: 20px; padding: 5px 12px; margin-top: 4px; }
+.header-sub { font-size: 11px; color: var(--muted); margin-top: 6px; letter-spacing: 0.5px; text-transform: uppercase; }
+
+/* Stats row */
+.stats { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 8px; padding: 0 20px 20px; }
+.stat { background: var(--surface); border: 0.5px solid var(--border); border-radius: 12px; padding: 14px 12px; }
+.stat-val { font-size: 26px; font-weight: 500; color: var(--text); line-height: 1; }
+.stat-lbl { font-size: 10px; color: var(--muted); margin-top: 5px; letter-spacing: 0.3px; }
+
+/* Mode selector */
+.section { padding: 0 20px 20px; }
+.section-title { font-size: 10px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 10px; }
+
+.mode-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.mode-card { background: var(--surface); border: 0.5px solid var(--border); border-radius: 14px; padding: 14px; cursor: pointer; transition: all 0.15s; position: relative; overflow: hidden; }
+.mode-card::before { content: ''; position: absolute; inset: 0; opacity: 0; transition: opacity 0.15s; }
+.mode-card.normal::before { background: var(--normal-bg); }
+.mode-card.exam::before { background: var(--exam-bg); }
+.mode-card.endsem::before { background: var(--endsem-bg); }
+.mode-card.rest::before { background: var(--rest-bg); }
+.mode-card.active { border-width: 1.5px; }
+.mode-card.active::before { opacity: 1; }
+.mode-card.normal.active { border-color: var(--normal); }
+.mode-card.exam.active { border-color: var(--exam); }
+.mode-card.endsem.active { border-color: var(--endsem); }
+.mode-card.rest.active { border-color: var(--rest); }
+
+.mode-dot { width: 8px; height: 8px; border-radius: 50%; margin-bottom: 8px; }
+.mode-card.normal .mode-dot { background: var(--normal); }
+.mode-card.exam .mode-dot { background: var(--exam); }
+.mode-card.endsem .mode-dot { background: var(--endsem); }
+.mode-card.rest .mode-dot { background: var(--rest); }
+
+.mode-name { font-size: 13px; font-weight: 500; color: var(--text); position: relative; }
+.mode-desc { font-size: 10px; color: var(--muted2); margin-top: 3px; line-height: 1.4; position: relative; }
+
+/* Rule box */
+.rule-box { margin: 0 20px 20px; background: var(--surface); border: 0.5px solid var(--border); border-radius: 14px; padding: 14px 16px; }
+.rule-text { font-size: 12px; color: var(--muted2); line-height: 1.6; }
+.rule-text strong { color: var(--text); font-weight: 500; }
+
+/* Checkin */
+.checkin { margin: 0 20px 20px; background: var(--surface); border: 0.5px solid var(--border); border-radius: 14px; padding: 16px; }
+.checkin-head { font-size: 12px; font-weight: 500; color: var(--muted2); margin-bottom: 14px; letter-spacing: 0.3px; }
+.task-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 0.5px solid var(--border); cursor: pointer; }
+.task-row:last-of-type { border-bottom: none; }
+.task-check { width: 20px; height: 20px; border-radius: 6px; border: 1.5px solid var(--border2); flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+.task-check.checked { border-color: var(--normal); background: var(--normal); }
+.task-check.checked svg { display: block; }
+.task-check svg { display: none; width: 12px; height: 12px; }
+.task-label { font-size: 13px; color: var(--muted2); line-height: 1.4; }
+.task-label.checked { color: var(--text); }
+
+.mark-btn { width: 100%; margin-top: 14px; padding: 14px; border-radius: 12px; border: none; font-family: 'DM Mono', monospace; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.15s; letter-spacing: 0.3px; }
+.mark-btn:active { transform: scale(0.97); }
+.mark-btn.idle { background: var(--surface2); color: var(--text); }
+.mark-btn.done { background: var(--normal-bg); color: var(--normal-light); border: 1px solid var(--normal); }
+
+/* Calendar */
+.cal-nav-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.cal-month { font-family: 'Fraunces', serif; font-size: 18px; font-weight: 300; color: var(--text); }
+.cal-btn { background: var(--surface); border: 0.5px solid var(--border2); border-radius: 8px; padding: 6px 14px; font-family: 'DM Mono', monospace; font-size: 12px; color: var(--muted2); cursor: pointer; }
+
+.day-labels { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; margin-bottom: 4px; }
+.day-lbl { text-align: center; font-size: 10px; color: var(--muted); padding: 3px 0; }
+
+.cal-days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
+.cal-cell { aspect-ratio: 1; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 12px; color: var(--muted); cursor: pointer; border: 0.5px solid transparent; transition: all 0.1s; }
+.cal-cell.empty { pointer-events: none; }
+.cal-cell.today { border-color: var(--border2); color: var(--text); font-weight: 500; }
+.cal-cell.done-normal { background: var(--normal-bg); color: var(--normal-light); border-color: rgba(29,158,117,0.3); }
+.cal-cell.done-exam { background: var(--exam-bg); color: var(--exam-light); border-color: rgba(186,117,23,0.3); }
+.cal-cell.done-endsem { background: var(--endsem-bg); color: var(--endsem-light); border-color: rgba(216,90,48,0.3); }
+.cal-cell.done-rest { background: var(--rest-bg); color: var(--rest-light); border-color: rgba(55,138,221,0.3); }
+
+/* Legend */
+.legend { display: flex; gap: 14px; flex-wrap: wrap; padding: 0 20px; margin-top: 12px; }
+.leg { display: flex; align-items: center; gap: 5px; font-size: 10px; color: var(--muted2); }
+.leg-dot { width: 8px; height: 8px; border-radius: 3px; }
+
+/* Bottom streak bar */
+.streak-bar { position: fixed; bottom: 0; left: 0; right: 0; max-width: 430px; margin: 0 auto; background: var(--surface); border-top: 0.5px solid var(--border2); padding: 12px 24px 28px; display: flex; align-items: center; gap: 10px; }
+.streak-icon { font-size: 22px; }
+.streak-info { flex: 1; }
+.streak-num { font-size: 22px; font-weight: 500; color: var(--text); line-height: 1; }
+.streak-label { font-size: 10px; color: var(--muted); margin-top: 2px; letter-spacing: 0.3px; text-transform: uppercase; }
+.restart-rule { font-size: 11px; color: var(--muted); text-align: right; line-height: 1.4; max-width: 140px; }
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg: #f5f3ee;
+    --surface: #ffffff;
+    --surface2: #f0ede6;
+    --border: rgba(0,0,0,0.08);
+    --border2: rgba(0,0,0,0.14);
+    --text: #1a1916;
+    --muted: #9e9a94;
+    --muted2: #6b6760;
+    --normal-bg: rgba(29,158,117,0.1);
+    --exam-bg: rgba(186,117,23,0.1);
+    --endsem-bg: rgba(216,90,48,0.1);
+    --rest-bg: rgba(55,138,221,0.1);
+  }
+  .streak-bar { background: var(--surface); }
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="header">
+    <div class="header-top">
+      <div>
+        <div class="app-name">Stay On.</div>
+        <div class="header-sub">consistency system — mayuresh</div>
+      </div>
+      <div class="date-chip" id="date-chip"></div>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><div class="stat-val" id="s-total">0</div><div class="stat-lbl">days logged</div></div>
+    <div class="stat"><div class="stat-val" id="s-normal">0</div><div class="stat-lbl">normal days</div></div>
+    <div class="stat"><div class="stat-val" id="s-rest">0</div><div class="stat-lbl">rest days used</div></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Today's mode</div>
+    <div class="mode-grid">
+      <div class="mode-card normal active" onclick="setMode('normal')">
+        <div class="mode-dot"></div>
+        <div class="mode-name">Normal</div>
+        <div class="mode-desc">Skills · English · DS · AI/ML</div>
+      </div>
+      <div class="mode-card exam" onclick="setMode('exam')">
+        <div class="mode-dot"></div>
+        <div class="mode-name">Insem prep</div>
+        <div class="mode-desc">5–7 days · syllabus only</div>
+      </div>
+      <div class="mode-card endsem" onclick="setMode('endsem')">
+        <div class="mode-dot"></div>
+        <div class="mode-name">Endsem prep</div>
+        <div class="mode-desc">15–20 days · heavy mode</div>
+      </div>
+      <div class="mode-card rest" onclick="setMode('rest')">
+        <div class="mode-dot"></div>
+        <div class="mode-name">Rest</div>
+        <div class="mode-desc">max 3–5 days · guilt-free</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="rule-box" id="rule-box">
+    <div class="rule-text" id="rule-text"></div>
+  </div>
+
+  <div class="checkin">
+    <div class="checkin-head" id="checkin-head">today's check-in</div>
+    <div id="task-list"></div>
+    <button class="mark-btn idle" id="mark-btn" onclick="markToday()">mark today done</button>
+  </div>
+
+  <div class="section">
+    <div class="cal-nav-row">
+      <button class="cal-btn" onclick="prevMonth()">← prev</button>
+      <div class="cal-month" id="cal-month"></div>
+      <button class="cal-btn" onclick="nextMonth()">next →</button>
+    </div>
+    <div class="day-labels">
+      <div class="day-lbl">Su</div><div class="day-lbl">Mo</div><div class="day-lbl">Tu</div>
+      <div class="day-lbl">We</div><div class="day-lbl">Th</div><div class="day-lbl">Fr</div><div class="day-lbl">Sa</div>
+    </div>
+    <div class="cal-days" id="cal-days"></div>
+  </div>
+
+  <div class="legend">
+    <div class="leg"><div class="leg-dot" style="background:#1D9E75"></div>Normal</div>
+    <div class="leg"><div class="leg-dot" style="background:#BA7517"></div>Insem</div>
+    <div class="leg"><div class="leg-dot" style="background:#D85A30"></div>Endsem</div>
+    <div class="leg"><div class="leg-dot" style="background:#378ADD"></div>Rest</div>
+  </div>
+
+</div>
+
+<div class="streak-bar">
+  <div class="streak-icon">🔥</div>
+  <div class="streak-info">
+    <div class="streak-num" id="streak-num">0</div>
+    <div class="streak-label">day streak</div>
+  </div>
+  <div class="restart-rule">miss max<br>2 days in a row</div>
+</div>
+
+<script>
+const MODES = {
+  normal: {
+    rule: '<strong>Normal mode:</strong> trigger habit + 20 mins of skills. English, Data Science, AI/ML. No syllabus stuff.',
+    tasks: ['Skill work for at least 20 min', '20 min English', '1 page of book']
+  },
+  exam: {
+    rule: '<strong>Insem prep (5–7 days):</strong> syllabus only, normal mode paused. After insem → 3 days rest → back to normal.',
+    tasks: []
+  },
+  endsem: {
+    rule: '<strong>Endsem prep (15–20 days):</strong> heavy syllabus mode. Try 20 mins of skills work if energy allows.',
+    tasks: []
+  },
+  rest: {
+    rule: '<strong>Rest mode (max 3–5 days):</strong> fully guilt-free. Clock is ticking — restart is already decided on day 4.',
+    tasks: []
+  }
+};
+
+const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+let currentMode = 'normal';
+let viewYear, viewMonth;
+let data = {};
+
+try { data = JSON.parse(localStorage.getItem('mtrack_v2') || '{}'); } catch(e) { data = {}; }
+function save() { try { localStorage.setItem('mtrack_v2', JSON.stringify(data)); } catch(e) {} }
+
+const today = new Date();
+const todayKey = `${today.getFullYear()}-${today.getMonth()}-${today.getDate()}`;
+viewYear = today.getFullYear();
+viewMonth = today.getMonth();
+
+// Date chip
+const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+document.getElementById('date-chip').textContent = `${days[today.getDay()]}, ${today.getDate()} ${MONTHS[today.getMonth()]}`;
+
+function setMode(m) {
+  currentMode = m;
+  document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('active'));
+  document.querySelector(`.mode-card.${m}`).classList.add('active');
+  document.getElementById('rule-text').innerHTML = MODES[m].rule;
+  renderCheckin();
+}
+
+function renderCheckin() {
+  const m = MODES[currentMode];
+  const todayDone = data[todayKey];
+  const list = document.getElementById('task-list');
+  list.innerHTML = '';
+  m.tasks.forEach((t, i) => {
+    const row = document.createElement('div');
+    row.className = 'task-row';
+    row.innerHTML = `
+      <div class="task-check ${todayDone ? 'checked' : ''}" id="chk${i}">
+        <svg viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="task-label ${todayDone ? 'checked' : ''}">${t}</div>`;
+    row.onclick = () => toggleTask(i);
+    list.appendChild(row);
+  });
+  const btn = document.getElementById('mark-btn');
+  if (todayDone) {
+    btn.className = 'mark-btn done';
+    btn.textContent = 'done today ✓';
+  } else {
+    btn.className = 'mark-btn idle';
+    btn.textContent = 'mark today done';
+  }
+}
+
+function toggleTask(i) {
+  const chk = document.getElementById(`chk${i}`);
+  const lbl = chk.nextElementSibling;
+  chk.classList.toggle('checked');
+  lbl.classList.toggle('checked');
+}
+
+function markToday() {
+  if (data[todayKey]) {
+    delete data[todayKey];
+  } else {
+    data[todayKey] = currentMode;
+  }
+  save();
+  renderStats();
+  renderCalendar();
+  renderCheckin();
+}
+
+function renderStats() {
+  const keys = Object.keys(data);
+  document.getElementById('s-total').textContent = keys.length;
+  document.getElementById('s-normal').textContent = keys.filter(k => data[k] === 'normal').length;
+  document.getElementById('s-rest').textContent = keys.filter(k => data[k] === 'rest').length;
+
+  let streak = 0;
+  const d = new Date();
+  while (streak < 365) {
+    const k = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+    if (data[k]) { streak++; d.setDate(d.getDate() - 1); }
+    else break;
+  }
+  document.getElementById('streak-num').textContent = streak;
+}
+
+function renderCalendar() {
+  document.getElementById('cal-month').textContent = `${MONTHS[viewMonth]} ${viewYear}`;
+  const grid = document.getElementById('cal-days');
+  grid.innerHTML = '';
+  const first = new Date(viewYear, viewMonth, 1).getDay();
+  const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+  for (let i = 0; i < first; i++) {
+    const el = document.createElement('div');
+    el.className = 'cal-cell empty';
+    grid.appendChild(el);
+  }
+  for (let d = 1; d <= daysInMonth; d++) {
+    const el = document.createElement('div');
+    el.textContent = d;
+    const key = `${viewYear}-${viewMonth}-${d}`;
+    const isToday = viewYear === today.getFullYear() && viewMonth === today.getMonth() && d === today.getDate();
+    const logged = data[key];
+    let cls = 'cal-cell';
+    if (isToday) cls += ' today';
+    if (logged) cls += ` done-${logged}`;
+    el.className = cls;
+    grid.appendChild(el);
+  }
+}
+
+function prevMonth() {
+  viewMonth--;
+  if (viewMonth < 0) { viewMonth = 11; viewYear--; }
+  renderCalendar();
+}
+function nextMonth() {
+  viewMonth++;
+  if (viewMonth > 11) { viewMonth = 0; viewYear++; }
+  renderCalendar();
+}
+
+// Init
+setMode('normal');
+renderStats();
+renderCalendar();
+</script>
+</body>
+</html>
